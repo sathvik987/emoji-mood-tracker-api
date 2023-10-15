@@ -140,11 +140,43 @@ const getMonthlySummary = async (req, res, next) => {
     }
 };
 
+const getByFilter = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+        let query = { userId };
+        let order = -1;
+        if (req.query.chronologicalOrder === "true") {
+            order = 1;
+        }
+
+        if (req.query.startDate || req.query.endDate) {
+            const startDate = new Date(req.query.startDate);
+            const endDate = new Date(req.query.endDate);
+
+            if ((!startDate instanceof Date || isNaN(startDate)) || (!endDate instanceof Date || isNaN(endDate))) {
+                return res.status(400).json('Invalid date range.');
+            }
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+            query.timestamp = {
+                $gte: startDate,
+                $lte: endDate,
+            };
+        }
+
+        const data = await Mood.find(query).sort({ timestamp: order });
+        return res.json(data);
+    } catch (error) {
+        return jsonErrorHandler(req, res, next, error);
+    }
+};
+
 
 
 module.exports = {
     add,
     update,
     deleteMood,
-    getMonthlySummary
+    getMonthlySummary,
+    getByFilter
 };
