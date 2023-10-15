@@ -5,6 +5,46 @@ const emojiRegex = require('emoji-regex');
 const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || "secret";
 const jwt = require('jsonwebtoken');
 
+const moodSuggestions = {
+    happy: '😄',
+    sad: '😢',
+    love: '❤️',
+    excited: '🎉',
+    happy: '😄',
+    sad: '😢',
+    love: '❤️',
+    excited: '🎉',
+    anger: '😡',
+    surprise: '😲',
+    cool: '😎',
+    laughing: '😂',
+    thumbsUp: '👍',
+    thumbsDown: '👎',
+    heartEyes: '😍',
+    crying: '😭',
+    sleeping: '😴',
+    peace: '✌️',
+    celebration: '🥳',
+    thinking: '🤔',
+    dancing: '💃',
+    grinning: '😁',
+    confused: '😕',
+    nerd: '🤓',
+    zippedMouth: '🤐',
+    rainbow: '🌈',
+    clown: '🤡',
+    money: '💰',
+    rocket: '🚀',
+    fire: '🔥',
+    heart: '❤️',
+    star: '⭐',
+    sun: '☀️',
+    moon: '🌙',
+    party: '🎉',
+    thumbsUp2: '👍🏼',
+    thumbsDown2: '👎🏼',
+};
+
 const containsOnlyEmoji = (text) => {
     const characters = [...text];
 
@@ -212,6 +252,39 @@ const shareData = async (req, res, next) => {
     }
 };
 
+const suggestEmojis = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+        if (!moodNote) {
+            return res.status(400).json('Missing required field(s). Please provide all required data.');
+        }
+        const suggestions = { ...moodSuggestions };
+        const { moodNote } = req.body;
+
+        const recentMoods = await Mood.find({ userId })
+            .sort({ timestamp: -1 }) // Sort in descending order by timestamp
+            .limit(10); // Limit to the last 10 records
+
+        // Extract mood keywords and emojis from the recent mood records
+        recentMoods.forEach((mood) => {
+            suggestions[mood.note] = mood.emoji;
+        });
+
+        let suggestedEmojis = [];
+
+        // Loop through mood keywords and check if they are present in the mood note
+        for (const keyword in suggestions) {
+            if (keyword.toLowerCase().includes(moodNote.toLowerCase())) {
+                suggestedEmojis.push(suggestions[keyword]);
+            }
+        }
+
+        res.json({ emojis: suggestedEmojis });
+    } catch (error) {
+        return jsonErrorHandler(req, res, next, error);
+    }
+};
+
 
 
 module.exports = {
@@ -221,5 +294,6 @@ module.exports = {
     getMonthlySummary,
     getByFilter,
     share,
-    shareData
+    shareData,
+    suggestEmojis
 };

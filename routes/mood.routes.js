@@ -10,5 +10,6 @@ router.get('/monthly-summary', authenticateToken, mood.getMonthlySummary);
 router.get('/filter', authenticateToken, mood.getByFilter);
 router.get('/share', authenticateToken, mood.share);
 router.get('/share/:token', mood.shareData);
+router.post('/suggest-emojis', authenticateToken, mood.suggestEmojis);
 
 module.exports = router;
