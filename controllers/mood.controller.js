@@ -42,6 +42,7 @@ const add = async (req, res, next) => {
 
 const update = async (req, res, next) => {
     try {
+        const user = req.user;
         let { emoji, note } = req.body;
         if (!emoji && !note) {
             return res.status(400).json('Missing required field(s). Please provide all required data.');
@@ -57,9 +58,9 @@ const update = async (req, res, next) => {
             return res.status(400).json('Missing required field(s). Please provide all required data.');
         }
 
-        let mood = await Mood.findById(req.params.id);
+        let mood = await Mood.findOne({ "_id": req.params.id, userId: user._id });
         if (!mood) {
-            return res.status(400).json('Invalid id.');
+            return res.status(400).json("Invalid id, or you don't have access to modify this.");
         }
 
         if (emoji) {
@@ -79,13 +80,14 @@ const update = async (req, res, next) => {
 
 const deleteMood = async (req, res, next) => {
     try {
+        const user = req.user;
         if (!req.params.id) {
             return res.status(400).json('Missing required field(s). Please provide all required data.');
         }
 
-        let mood = await Mood.findById(req.params.id);
+        let mood = await Mood.findOne({ "_id": req.params.id, userId: user._id });
         if (!mood) {
-            return res.status(400).json('Invalid id.');
+            return res.status(400).json("Invalid id, or you don't have access to modify this.");
         }
 
         await Mood.deleteOne({ _id: req.params.id });
