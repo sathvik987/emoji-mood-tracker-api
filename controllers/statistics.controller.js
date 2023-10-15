@@ -48,8 +48,25 @@ const getMoodTrends = async (req, res, next) => {
     }
 };
 
+const getPublicMoodBoardData = async (req, res, next) => {
+    try {
+        const moodData = await Mood.find();
+
+        const formattedData = moodData.map((entry) => ({
+            emoji: entry.emoji,
+            note: entry.note,
+            timestamp: entry.timestamp,
+        }));
+
+        res.json(formattedData);
+    } catch (error) {
+        return jsonErrorHandler(req, res, next, error);
+    }
+};
+
 
 module.exports = {
     getEmojiStatistics,
-    getMoodTrends
+    getMoodTrends,
+    getPublicMoodBoardData
 };

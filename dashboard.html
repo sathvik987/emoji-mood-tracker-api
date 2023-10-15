@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #chart-container {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 70%;
+            height: 40%;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #chart {
+            width: 100%;
+            height: 100%;
+        }
+
+
+        #emoji-chart-container {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            width: 70%;
+            height: 40%;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #emoji-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        #container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Dashboard</h1>
+    <div id="container">
+        <div id="chart-container">
+            <h4 id="error" style="flex: 0 0 100%;text-align: center;"></h4>
+            <canvas id="chart"></canvas>
+        </div>
+        <div id="emoji-chart-container" style="margin-top: 2em;margin-bottom: 2em;">
+            <h4 id="emoji-error" style="flex: 0 0 100%;text-align: center;"></h4>
+            <canvas id="emoji-chart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const chartContainer = document.getElementById("chart");
+        const ctx = chartContainer.getContext("2d");
+        const errorDiv = document.getElementById("error");
+        fetch("http://localhost:9000/statistics/mood-trends")
+            .then(response => response.json())
+            .then(data => {
+                if (data.dates.length === 0) {
+                    errorDiv.innerHTML = "No data.";
+                } else {
+                    createChart(data.dates, data.moodCounts);
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);
+                errorDiv.innerHTML = "Error fetching data.";
+            });
+
+        function createChart(labels, data) {
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Moods logged",
+                            data: data,
+                            backgroundColor: "steelblue",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Timestamps",
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "Count",
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
+
+        const emojiChartContainer = document.getElementById("emoji-chart");
+        const emojiCtx = emojiChartContainer.getContext("2d");
+        const emojiErrorDiv = document.getElementById("emoji-error");
+        fetch("http://localhost:9000/statistics/emoji-statistics")
+            .then(response => response.json())
+            .then(data => {
+                let labels = [];
+                let chartData = [];
+                for (const _data of data) {
+                    labels.push(_data.emoji);
+                    chartData.push(_data.count);
+                }
+                if (chartData.length === 0) {
+                    emojiErrorDiv.innerHTML = "No data.";
+                } else {
+                    createEmojiChart(labels, chartData);
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching data:", error);
+                emojiErrorDiv.innerHTML = "Error fetching data.";
+            });
+
+        function createEmojiChart(labels, data) {
+            new Chart(emojiCtx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Emoji used",
+                            data: data,
+                            backgroundColor: "steelblue",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: "Emojis",
+                            },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: "Count",
+                            },
+                        },
+                    },
+                },
+            });
+        }
+    </script>
+</body>
+
+</html>
