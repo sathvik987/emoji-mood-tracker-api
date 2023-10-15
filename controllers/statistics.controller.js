@@ -25,6 +25,31 @@ const getEmojiStatistics = async (req, res, next) => {
     }
 };
 
+const getMoodTrends = async (req, res, next) => {
+    try {
+        // Get mood trends data
+        const moodTrends = await Mood.aggregate([
+            {
+                $group: {
+                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+                    count: { $sum: 1 },
+                },
+            },
+            { $sort: { _id: 1 } }, // Sort by date in ascending order
+        ]);
+
+        // Extract dates and mood counts from the result
+        const dates = moodTrends.map((trend) => trend._id);
+        const moodCounts = moodTrends.map((trend) => trend.count);
+
+        res.json({ dates, moodCounts });
+    } catch (error) {
+        return jsonErrorHandler(req, res, next, error);
+    }
+};
+
+
 module.exports = {
-    getEmojiStatistics
+    getEmojiStatistics,
+    getMoodTrends
 };
