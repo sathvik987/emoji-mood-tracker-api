@@ -59,7 +59,22 @@ const login = async (req, res, next) => {
 };
 
 
+const toggleSharing = async (req, res, next) => {
+    try {
+        let user = req.user;
+        user.sharingEnabled = !user.sharingEnabled;
+        user = await user.save();
+
+        user = user.toObject();
+        delete user.password;
+        return res.json(user);
+    } catch (error) {
+        return jsonErrorHandler(req, res, next, error);
+    }
+};
+
 module.exports = {
     register,
     login,
+    toggleSharing
 };

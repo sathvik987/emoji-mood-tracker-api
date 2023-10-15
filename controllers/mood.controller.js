@@ -1,7 +1,9 @@
 const Mood = require('../models/mood.model');
+const User = require('../models/user.model');
 const { jsonErrorHandler } = require('./helper.util');
 const emojiRegex = require('emoji-regex');
-
+const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET || "secret";
+const jwt = require('jsonwebtoken');
 
 const containsOnlyEmoji = (text) => {
     const characters = [...text];
@@ -171,6 +173,45 @@ const getByFilter = async (req, res, next) => {
     }
 };
 
+const share = async (req, res, next) => {
+    try {
+        let user = req.user;
+        user = user.toObject();
+        delete user.password;
+
+        let accessToken = jwt.sign(user, accessTokenSecret);
+
+        return res.json({
+            link: `${req.protocol}://${req.get('host')}/mood/share/${accessToken}`
+        });
+    } catch (error) {
+        return jsonErrorHandler(req, res, next, error);
+    }
+};
+
+const shareData = async (req, res, next) => {
+    try {
+        let jwtPayload = await jwt.verify(req.params.token, accessTokenSecret);
+        if (!jwtPayload || !jwtPayload.username) {
+            throw Error;
+        }
+
+        let user = await User.findOne({ username: jwtPayload.username });
+        if (!user) {
+            throw Error;
+        }
+
+        if (!user.sharingEnabled) {
+            return res.status(403).json('User has disabled sharing.');
+        }
+
+        const data = await Mood.find({ userId: user._id });
+        return res.json(data);
+    } catch (error) {
+        return res.status(400).json('Invalid url.');
+    }
+};
+
 
 
 module.exports = {
@@ -178,5 +219,7 @@ module.exports = {
     update,
     deleteMood,
     getMonthlySummary,
-    getByFilter
+    getByFilter,
+    share,
+    shareData
 };

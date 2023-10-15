@@ -8,5 +8,7 @@ router.put('/:id', authenticateToken, mood.update);
 router.delete('/:id', authenticateToken, mood.deleteMood);
 router.get('/monthly-summary', authenticateToken, mood.getMonthlySummary);
 router.get('/filter', authenticateToken, mood.getByFilter);
+router.get('/share', authenticateToken, mood.share);
+router.get('/share/:token', mood.shareData);
 
 module.exports = router;
