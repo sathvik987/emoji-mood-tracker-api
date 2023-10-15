@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 const user = require('./routes/user.routes');
 const mood = require('./routes/mood.routes');
+const statistics = require('./routes/statistics.routes');
 
 const mongodbURL = process.env.MONGO_DB_URL;
 
@@ -22,5 +23,6 @@ con.on('open', () => {
 app.use(express.json());
 app.use(cors());
 app.use('/user', user);
-app.use('/mood', mood)
+app.use('/mood', mood);
+app.use('/statistics', statistics)
 
