@@ -33,4 +33,9 @@ The Emoji Mood Tracker API is a feature-rich RESTful service developed with Node
     npm start
   ```
 
+## Documentation
+For detailed information about API, please refer [Postman API Documentation](https://documenter.getpostman.com/view/21881871/2s9YR6ZtqP).
+
+Open dashboard.html in browser to view data visualizations
+
 
