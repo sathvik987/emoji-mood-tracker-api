@@ -255,11 +255,11 @@ const shareData = async (req, res, next) => {
 const suggestEmojis = async (req, res, next) => {
     try {
         const userId = req.user._id;
+        const { moodNote } = req.body;
         if (!moodNote) {
             return res.status(400).json('Missing required field(s). Please provide all required data.');
         }
         const suggestions = { ...moodSuggestions };
-        const { moodNote } = req.body;
 
         const recentMoods = await Mood.find({ userId })
             .sort({ timestamp: -1 }) // Sort in descending order by timestamp
